@@ -15,7 +15,7 @@ import sharedCommentValidation from 'util/helpers/sharedCommentValidation';
 import * as sharedUserValidation from 'util/helpers/sharedUserValidation';
 import * as pageHelpers from 'util/helpers/pageHelpers';
 
-import * as PostActions from 'modules/Post/PostActions';
+import * as CommentActions from 'modules/Post/CommentActions';
 import * as UIActions from 'modules/UI/UIActions';
 
 import styles from './Comment.scss';
@@ -25,10 +25,8 @@ class CommentGroup extends React.Component {
 	constructor(props) {
 		super(props);
 
-		this.state = {
-	    	replyRandomId: Math.round(Math.random() * 1000000), // used for tracking errors for comments (when replying); unique to each page load
-	    	editRandomId: Math.round(Math.random() * 1000000), // used for tracking errors for comments (when editing); unique to each page load
-		}
+	    this.replyRandomId = Math.round(Math.random() * 1000000), // used for tracking errors for comments (when replying); unique to each page load
+	    this.editRandomId = Math.round(Math.random() * 1000000), // used for tracking errors for comments (when editing); unique to each page load
 
 		// info on each of the following can be found where the function is defined
 		this.cancelComment = this.cancelComment.bind(this);
@@ -56,7 +54,7 @@ class CommentGroup extends React.Component {
 	cancelReply() {
 		this.textAreaContentElem = null;
 
-		this.toggleCommentUnique(this.state.replyRandomId);
+		this.toggleCommentUnique(this.replyRandomId);
 		this.props.updateHasCommentChanged(false); // tracks how many comments are being replied to/changed
 	}
 
@@ -135,7 +133,7 @@ class CommentGroup extends React.Component {
 				this.textAreaContentElem.focus();
 			}
 		} else { // open new reply
-			this.toggleCommentUnique(this.state.replyRandomId);
+			this.toggleCommentUnique(this.replyRandomId);
 			this.props.updateHasCommentChanged(true); // tracks how many comments are being replied to/changed (to confirm() on page leave)
 		}
 	}
@@ -147,7 +145,7 @@ class CommentGroup extends React.Component {
 
 	// called on "Edit" click
 	toggleEditThisComment(isStartingEdit = true) {
-		this.toggleCommentUnique(this.state.editRandomId);
+		this.toggleCommentUnique(this.editRandomId);
 		this.props.updateHasCommentChanged(isStartingEdit);
 	}
 
@@ -236,8 +234,8 @@ class CommentGroup extends React.Component {
 	    let commentWrapperClass = props.topComment.isHighlighted ? [defaultCommentWrapClass, styles['comment-display__individual--highlighted']].join(' ') : defaultCommentWrapClass;
 
 	    // are we editing or replying right now in regards to this comment?
-	    const isEditing = searchGeneralUI(props.generalUI, `CommentUniqueEdit_${this.state.editRandomId}`, 'editing', true);
-	    const isReplying = searchGeneralUI(props.generalUI, `CommentUniqueEdit_${this.state.replyRandomId}`, 'editing', true);
+	    const isEditing = searchGeneralUI(props.generalUI, `CommentUniqueEdit_${this.editRandomId}`, 'editing', true);
+	    const isReplying = searchGeneralUI(props.generalUI, `CommentUniqueEdit_${this.replyRandomId}`, 'editing', true);
 
 	    let usernameWrapper = <Link className={styles['comment-display__link']} to={`/user/${props.topComment.creatorUsername}`}>
 			@{props.topComment.creatorUsername}
@@ -305,7 +303,7 @@ class CommentGroup extends React.Component {
 						updateHasCommentChanged={props.updateHasCommentChanged}
 						customClassWrapper={'comment-display-edit'}
 						isEditing={true}
-						uniqueEditId={this.state.editRandomId}
+						uniqueEditId={this.editRandomId}
 						submitComment={(content, uniqueEditId) => {this.onSubmitCommentEdit(content, uniqueEditId);}}
 						cancelComment={this.cancelComment}
 						shouldFocusOnLoad={true} />
@@ -318,7 +316,7 @@ class CommentGroup extends React.Component {
 							updateHasCommentChanged={props.updateHasCommentChanged}
 							customClassWrapper={'comment-display-edit'}
 							isEditing={true}
-							uniqueEditId={this.state.replyRandomId}
+							uniqueEditId={this.replyRandomId}
 							submitComment={(content, uniqueEditId) => {this.onSubmitComment(content, uniqueEditId);}}
 							cancelComment={this.cancelReply}
 							shouldFocusOnLoad={true}
@@ -359,8 +357,9 @@ class CommentDisplay extends React.Component {
 
 		this.state = {
 			countCommentsChanged: 0, // count how many comments are currently being edited/replied to
-	    	editRandomId: Math.round(Math.random() * 1000000), // unique id for tracking changes to new top comment
 		}
+
+		this.editRandomId = Math.round(Math.random() * 1000000), // unique id for tracking changes to new top comment
 
 		this.isUserLoggedIn = this.isUserLoggedIn.bind(this);
 		this.newCommentChanged = this.newCommentChanged.bind(this);
@@ -392,9 +391,9 @@ class CommentDisplay extends React.Component {
 
 	// decides when editing, and when not editing; used to override the content and replace with a blank value when no longer editing
 	newCommentChanged(hasChanged) {
-		const thisEditingBool = searchGeneralUI(this.props.generalUI, `CommentUniqueEdit_${this.state.editRandomId}`, 'editing', true);
+		const thisEditingBool = searchGeneralUI(this.props.generalUI, `CommentUniqueEdit_${this.editRandomId}`, 'editing', true);
 		if ((thisEditingBool === true && hasChanged !== true) || (thisEditingBool !== true)) {
-			this.props.toggleCommentUnique(this.state.editRandomId, this.props.generalUI);
+			this.props.toggleCommentUnique(this.editRandomId, this.props.generalUI);
 		}
 	}
 
@@ -556,7 +555,7 @@ class CommentDisplay extends React.Component {
 						toggleCommentUnique={props.toggleCommentUnique} />;
 		});
 
-	    const isEditing = searchGeneralUI(props.generalUI, `CommentUniqueEdit_${this.state.editRandomId}`, 'editing', true);
+	    const isEditing = searchGeneralUI(props.generalUI, `CommentUniqueEdit_${this.editRandomId}`, 'editing', true);
 	    const overrideContent = isEditing ? {} : {overrideContent: ''};
 
 		return (
@@ -566,7 +565,7 @@ class CommentDisplay extends React.Component {
 					id={-1}
 					updateHasCommentChanged={(hasChanged) => {this.updateHasCommentChanged(hasChanged);this.newCommentChanged(hasChanged);}}
 					isEditing={false}
-					uniqueEditId={this.state.editRandomId}
+					uniqueEditId={this.editRandomId}
 					submitComment={(content, uniqueEditId) => {this.onSubmitComment(content, uniqueEditId);}}
 					{...overrideContent} />
 				<div className={styles['comment-display__wrapper']}>
@@ -622,7 +621,7 @@ const mapDispatchToProps = (dispatch, ownProps) => {
 
 		// submit vote
 		submitCommentVote(newVote, commentId) {
-            dispatch(PostActions.submitCommentVote(newVote, commentId, ownProps.shared_post_id));
+            dispatch(CommentActions.submitCommentVote(newVote, commentId, ownProps.shared_post_id));
 		},
 
 		// submit comment after checking for errors
@@ -630,7 +629,7 @@ const mapDispatchToProps = (dispatch, ownProps) => {
 			const errorFlag = sharedCommentValidation(content, replyTop, replyTo, level, true, uniqueEditId, UIActions, dispatch);
 
 			if (!errorFlag) {
-            	dispatch(PostActions.submitComment(content, replyTop, replyTo, level, uniqueEditId, ownProps.shared_post_id));
+            	dispatch(CommentActions.submitComment(content, replyTop, replyTo, level, uniqueEditId, ownProps.shared_post_id));
 			}
 		},
 
@@ -638,7 +637,7 @@ const mapDispatchToProps = (dispatch, ownProps) => {
 			const errorFlag = sharedCommentValidation(content, -1, -1, 0, true, uniqueEditId, UIActions, dispatch);
 
 			if (!errorFlag) {
-            	dispatch(PostActions.editComment(comment_id, content, uniqueEditId, ownProps.shared_post_id));
+            	dispatch(CommentActions.editComment(comment_id, content, uniqueEditId, ownProps.shared_post_id));
 			}
 		},
 
@@ -656,15 +655,15 @@ const mapDispatchToProps = (dispatch, ownProps) => {
 
 		// load more comments (loads either for top comments, or comments that are the child of a top comment)
 		loadMoreComments(level, top_comment_id, currently_loaded) {
-			dispatch(PostActions.loadMoreComments(level, top_comment_id, currently_loaded, ownProps.shared_post_id));
+			dispatch(CommentActions.loadMoreComments(level, top_comment_id, currently_loaded, ownProps.shared_post_id));
 		},
 
 		deleteComment(id, commentData) {
-            dispatch(PostActions.deleteComment(id, ownProps.shared_post_id, commentData));
+            dispatch(CommentActions.deleteComment(id, ownProps.shared_post_id, commentData));
 		},
 
 		reportComment(id) {
-            dispatch(PostActions.reportComment(id, ownProps.shared_post_id));
+            dispatch(CommentActions.reportComment(id, ownProps.shared_post_id));
 		},
 	}
 }
