@@ -25,8 +25,8 @@ class CommentGroup extends React.Component {
 	constructor(props) {
 		super(props);
 
-	    this.replyRandomId = Math.round(Math.random() * 1000000), // used for tracking errors for comments (when replying); unique to each page load
-	    this.editRandomId = Math.round(Math.random() * 1000000), // used for tracking errors for comments (when editing); unique to each page load
+		this.replyRandomId = Math.round(Math.random() * 1000000), // used for tracking errors for comments (when replying); unique to each page load
+		this.editRandomId = Math.round(Math.random() * 1000000), // used for tracking errors for comments (when editing); unique to each page load
 
 		// info on each of the following can be found where the function is defined
 		this.cancelComment = this.cancelComment.bind(this);
